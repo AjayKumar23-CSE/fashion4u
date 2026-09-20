@@ -62,7 +62,7 @@ switch `DATABASE_URL` in `apps/api/.env` to the commented-out value.
 ## Deploying
 
 Storefront and admin on Netlify, the API on any host that runs a long-lived
-Node process (Koyeb, Render, Cloud Run), the database on Neon and images in S3.
+Node process (Render, Cloud Run), the database on Neon and images in S3.
 `apps/*/netlify.toml` and `apps/api/Dockerfile` hold the build configuration;
 the full walkthrough, the environment variables each service needs and the
 free-tier trade-offs are in [docs/deployment.md](docs/deployment.md).

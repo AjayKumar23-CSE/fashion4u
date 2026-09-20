@@ -4,7 +4,7 @@ Three services and a database:
 
 | Service | What it is | Suggested host |
 |---|---|---|
-| `apps/api` | NestJS, long-running | Koyeb (see below) |
+| `apps/api` | NestJS, long-running | Render (see below) |
 | `apps/storefront` | Next.js 16, server-rendered | Netlify |
 | `apps/admin` | Vite SPA, static | Netlify |
 | database | Postgres | Neon, already live (Singapore) |
@@ -15,34 +15,38 @@ Three services and a database:
 The API cannot be a static site or a plain serverless function: it is a
 long-running server with a scheduled job, and Razorpay posts webhooks to it.
 
-| Host | Free tier | Sleeps after | Cold start | Card needed |
+**Koyeb is no longer an option.** It was acquired by Mistral AI in February
+2026 and closed its free tier to new signups; existing accounts keep theirs.
+
+| Host | Free tier | Sleeps after | Cold start | Card |
 |---|---|---|---|---|
-| **Koyeb** | 1 service, 512 MB, 0.1 vCPU | 1 hour idle | **1–5s** | no |
-| Render | 750 hrs/month | 15 min idle | **30–60s** | no |
-| Google Cloud Run | 2M requests + 180k vCPU-s per month | scales to zero | ~1–2s | yes |
-| Fly.io / Railway | trial credit only | — | — | yes |
+| **Render** | 750 instance-hours/month | 15 min idle | 30–60s | no |
+| Google Cloud Run | 2M requests + 180k vCPU-s/month | scales to zero | ~1–2s | yes |
+| Railway | $5 trial, then $1/month credit | — | none | yes |
+| Fly.io | trial credit only | — | — | yes |
 
-**Start with Koyeb.** Render is the better-known name, but its free tier sleeps
-after 15 minutes and takes 30–60 seconds to wake. That matters more here than
-it looks: the storefront renders every page on the server by calling this API,
-so a sleeping API means the first visitor stares at a blank page for a minute.
-Koyeb sleeps only after an hour and wakes in a few seconds. It also has a
-Singapore region, next to the database.
+**Use Render, and keep it awake.** Its cold start is the worst of the three —
+and it matters more here than it looks, because the storefront renders every
+page by calling this API, so a sleeping API means the first visitor waits a
+minute for a blank screen.
 
-Move to Cloud Run when the store is real — same scale-to-zero, much larger free
-allowance, no sleep penalty worth worrying about.
+The fix is arithmetic: the free tier gives **750 instance-hours a month** and a
+month is about **730 hours**. One service can therefore stay awake all month
+and still fit. Point a free uptime pinger (cron-job.org, UptimeRobot) at
+`https://<api-host>/api/v1/health` every 10 minutes and the service never idles
+long enough to be stopped.
 
-### Two consequences of scale-to-zero
+That also fixes the other problem with scale-to-zero: `PaymentTimeoutService`
+releases stock held by prepaid orders that were never paid, 15 minutes on, and
+it only runs while the service is up.
 
-Both apply to every free host above; neither is a bug.
+Without the pinger, expect a 30–60 second wait on the first request after a
+quiet spell, and stock held longer than it should be. Neither is a bug.
 
-- **`PaymentTimeoutService` only runs while the service is awake.** It releases
-  stock held by prepaid orders that were never paid, 15 minutes on. While the
-  service sleeps, that stock stays reserved. Either accept it at this size, or
-  point a free external scheduler (cron-job.org and similar) at
-  `/api/v1/health` every 10 minutes to keep the service up.
-- **The first Razorpay webhook after an idle spell may time out.** Razorpay
-  retries, and `markPaid` is idempotent, so the order still settles.
+Move to **Cloud Run** when the store is real — same Dockerfile, a much larger
+always-free allowance and a cold start measured in seconds rather than a
+minute. It needs a card on file, though it will not charge within the free
+tier.
 
 ## Order of work
 
@@ -62,16 +66,19 @@ Run it from your machine. Migrations are not run at container start: a failed
 migration would take the service down with it, and two instances starting
 together would race.
 
-### 2. API on Koyeb
+### 2. API on Render
 
-Create a web service from the GitHub repo.
+New **Web Service** from the GitHub repo, `main` branch.
 
-- **Builder**: Dockerfile, at `apps/api/Dockerfile`, with the build context set
-  to the repository root. The root lockfile governs the whole workspace, so
-  building from `apps/api` alone will not work.
+- **Language**: Docker
+- **Dockerfile Path**: `./apps/api/Dockerfile`
+- **Root Directory**: leave **empty**. The root lockfile governs the whole
+  workspace, so a build context of `apps/api` alone will not work.
 - **Region**: Singapore, matching the database.
-- **Port**: 4000 (the app also honours `PORT` if the platform sets one).
-- **Health check**: `/api/v1/health`.
+- **Instance type**: Free
+- **Health Check Path**: `/api/v1/health`
+
+The app reads `PORT`, which Render sets itself; do not hard-code it.
 
 Environment variables — copy the values from `apps/api/.env`, except where
 noted:
