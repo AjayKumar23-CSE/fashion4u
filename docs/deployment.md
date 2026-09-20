@@ -70,15 +70,34 @@ together would race.
 
 New **Web Service** from the GitHub repo, `main` branch.
 
-- **Language**: Docker
-- **Dockerfile Path**: `./apps/api/Dockerfile`
-- **Root Directory**: leave **empty**. The root lockfile governs the whole
-  workspace, so a build context of `apps/api` alone will not work.
-- **Region**: Singapore, matching the database.
-- **Instance type**: Free
-- **Health Check Path**: `/api/v1/health`
+| Field | Value |
+|---|---|
+| Language | **Node** |
+| Root Directory | **leave empty** |
+| Build Command | `npm ci && npm run build --workspace api` |
+| Start Command | `node apps/api/dist/main` |
+| Region | Singapore, matching the database |
+| Instance type | Free |
+| Health Check Path | `/api/v1/health` |
 
-The app reads `PORT`, which Render sets itself; do not hard-code it.
+**Root Directory must stay empty.** It is tempting to set it to `apps/api`,
+but `package-lock.json` lives at the repository root and governs every
+workspace; without it npm resolves versions on its own and the pins are lost.
+The API is selected by `--workspace api` and by the path in the start command,
+not by a directory setting.
+
+`npm run build` runs `prebuild` first, which is `prisma generate`, so the
+client is produced during the build rather than committed.
+
+The app reads `PORT`, which Render sets itself; do not add it to the
+environment.
+
+`apps/api/Dockerfile` is not used by this setup. It stays for Cloud Run, or any
+host that wants a container, and builds from the repository root:
+
+```sh
+docker build -f apps/api/Dockerfile -t store-api .
+```
 
 Environment variables — copy the values from `apps/api/.env`, except where
 noted:
