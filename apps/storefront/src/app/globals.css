@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/*
+ * A quiet, typography-led system: near-black on white, one grey surface, and
+ * colour used only where it carries meaning (a sale price, a link). Space and
+ * type size do the work that borders and badges usually do.
+ */
+@theme inline {
+  --font-sans: var(--font-inter);
+
+  --color-ink: #1d1d1f;
+  --color-muted: #6e6e73;
+  --color-hairline: #d8d8dc;
+  --color-surface: #f5f5f7;
+  --color-sale: #b3261e;
+  --color-link: #0b5bd3;
+
+  --text-display: 3.25rem;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.035em;
+  --text-headline: 2rem;
+  --text-headline--line-height: 1.12;
+  --text-headline--letter-spacing: -0.025em;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  @theme inline {
+    --text-display: 5rem;
+    --text-headline: 3rem;
+  }
+}
+
+body {
+  background: #ffffff;
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Sections fade up as they arrive, which is what makes a long, sparse page
+   feel considered rather than empty. Disabled when motion is unwelcome. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    animation: reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

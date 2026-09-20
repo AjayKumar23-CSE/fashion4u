@@ -1,0 +1,10 @@
+# Netlify site settings: leave "Base directory" at the repository root and set
+# "Package directory" to apps/storefront.
+#
+# Netlify detects Next.js and installs its runtime automatically; Next 16 needs
+# no extra configuration. Every route here is server-rendered, so they run as
+# Netlify functions rather than being served as static files.
+
+[build]
+  command = "npm run build"
+  publish = ".next"

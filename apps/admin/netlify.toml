@@ -1,0 +1,23 @@
+# Netlify site settings: leave "Base directory" at the repository root and set
+# "Package directory" to apps/admin, so dependencies install from the root
+# lockfile and the pinned versions (Vite 8) are honoured.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# The admin is a single-page app: react-router serves every path from one HTML
+# file, so without this a refresh on /products is a 404 from the CDN.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# It is a staff tool, not a shop; keep it out of search results.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

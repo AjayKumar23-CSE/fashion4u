@@ -1,0 +1,24 @@
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+
+.env
+.env.local
+.env.*.local
+!.env.example
+
+*.log
+.DS_Store
+*.tsbuildinfo
+
+# Prisma generated client
+apps/api/src/generated/
+
+# The supplied seed photographs belong to the reference store and are not ours
+# to publish. They live only on the machine that seeds a catalog; every image
+# the app actually serves is in S3, so nothing at runtime needs this folder.
+# Replace them with your own photography before putting it back.
+apps/storefront/public/seed/
