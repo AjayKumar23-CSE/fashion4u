@@ -133,8 +133,17 @@ New site from the repo:
 - **Base directory**: leave empty (the repository root)
 - **Package directory**: `apps/storefront`
 
-`apps/storefront/netlify.toml` supplies the rest. Netlify detects Next.js and
-installs its runtime; Next 16 needs no extra configuration.
+`apps/storefront/netlify.toml` supplies the rest.
+
+Its `command` and `publish` are written relative to the **base** directory —
+the repository root — not to the file's own folder. Netlify resolves them that
+way, so a bare `npm run build` runs the *root* script (which builds all three
+workspaces) and a bare `.next` is looked for at the repository root, where the
+plugin fails with "Your publish directory was not found". Hence
+`npm run build --workspace storefront` and `apps/storefront/.next`.
+
+Netlify detects Next.js and installs its runtime; Next 16 needs no extra
+configuration.
 
 | Variable | Value |
 |---|---|

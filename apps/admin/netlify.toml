@@ -1,10 +1,13 @@
-# Netlify site settings: leave "Base directory" at the repository root and set
-# "Package directory" to apps/admin, so dependencies install from the root
-# lockfile and the pinned versions (Vite 8) are honoured.
+# Netlify site settings: "Project to deploy" (package directory) is apps/admin,
+# and the base directory stays at the repository root so dependencies install
+# from the root lockfile and the pinned versions (Vite 8) are honoured.
+#
+# Both paths below are relative to the BASE directory — the repository root —
+# not to this file.
 
 [build]
-  command = "npm run build"
-  publish = "dist"
+  command = "npm run build --workspace admin"
+  publish = "apps/admin/dist"
 
 # The admin is a single-page app: react-router serves every path from one HTML
 # file, so without this a refresh on /products is a 404 from the CDN.

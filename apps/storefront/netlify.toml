@@ -1,10 +1,16 @@
-# Netlify site settings: leave "Base directory" at the repository root and set
-# "Package directory" to apps/storefront.
+# Netlify site settings: "Project to deploy" (package directory) is
+# apps/storefront, and the base directory stays at the repository root so
+# dependencies install from the root lockfile.
+#
+# Both paths below are relative to the BASE directory — the repository root —
+# not to this file. A bare `npm run build` would run the root script, which
+# builds all three workspaces, and a bare `.next` would be looked for at the
+# repository root, where it does not exist.
 #
 # Netlify detects Next.js and installs its runtime automatically; Next 16 needs
 # no extra configuration. Every route here is server-rendered, so they run as
 # Netlify functions rather than being served as static files.
 
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "npm run build --workspace storefront"
+  publish = "apps/storefront/.next"
