@@ -74,7 +74,7 @@ New **Web Service** from the GitHub repo, `main` branch.
 |---|---|
 | Language | **Node** |
 | Root Directory | **leave empty** |
-| Build Command | `npm ci && npm run build --workspace api` |
+| Build Command | `npm ci --include=dev && npm run build --workspace api` |
 | Start Command | `node apps/api/dist/main` |
 | Region | Singapore, matching the database |
 | Instance type | Free |
@@ -85,6 +85,12 @@ but `package-lock.json` lives at the repository root and governs every
 workspace; without it npm resolves versions on its own and the pins are lost.
 The API is selected by `--workspace api` and by the path in the start command,
 not by a directory setting.
+
+`--include=dev` is not optional. Render sets `NODE_ENV=production` for the
+build, and npm honours that by skipping devDependencies — which is where the
+Nest CLI lives, so the build dies with `sh: 1: nest: not found` and exit code
+127. The flag overrides it for the install only; the running service still has
+`NODE_ENV=production`.
 
 `npm run build` runs `prebuild` first, which is `prisma generate`, so the
 client is produced during the build rather than committed.
